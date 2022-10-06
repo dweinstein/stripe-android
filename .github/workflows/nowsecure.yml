@@ -50,7 +50,7 @@ jobs:
 
       - name: Display structure of downloaded files
         run: ls -R
-        working-directory: ./apps
+        working-directory: ./
 
       - id: upload
         name: NowSecure upload app
