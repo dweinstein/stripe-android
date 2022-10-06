@@ -1,0 +1,55 @@
+name: "NowSecure - Existing Report"
+
+on:
+  workflow_dispatch:
+    # Inputs the workflow accepts.
+    inputs:
+      report_id:
+        description: 'Report ID to retrieve'
+        # Input has to be provided for the workflow to run
+        required: true
+jobs:
+
+ scan:
+  runs-on: ubuntu-latest
+
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install ripgrep
+      run: sudo apt-get install -y ripgrep
+
+    # demonstrates getting an existing report and converting to sarif
+    - name: NowSecure GHAS
+      uses: nowsecure/nowsecure-action/convert-sarif@main
+      timeout-minutes: 60
+      with:
+        token: ${{ secrets.NS_TOKEN }}
+        report_id: ${{ inputs.report_id }}
+        group_id: "38a6ce91-7920-493d-958a-b912e1bdb506"
+        enable_dependencies: false
+        enable_sarif: true
+
+    - name: Upload SARIF to artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: NowSecure.sarif
+        path: ./NowSecure.sarif
+
+    # demonstrates getting an existing report and uploading the dependencies to dependency graph
+    - name: NowSecure-SBOM
+      uses: nowsecure/nowsecure-action/convert-sarif@main
+      timeout-minutes: 60
+      with:
+        token: ${{ secrets.NS_TOKEN }}
+        report_id: ${{ inputs.report_id }}
+        group_id: "38a6ce91-7920-493d-958a-b912e1bdb506"
+        enable_dependencies: true
+        enable_sarif: false
+
+    - name: Upload nsconfig for audit
+      uses: actions/upload-artifact@v2
+      with:
+        name: nsconfig.yml
+        path: ./nsconfig.yml
