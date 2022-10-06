@@ -25,8 +25,15 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+
       - name: Build debug APK
         run: ./gradlew :paymentsheet-example:assembleDebug
+
+      - name: Upload application
+        uses: actions/upload-artifact@v2
+        with:
+          name: apps
+          path: ./*/build/outputs/apk/*/*.apk
 
   # Scan the Android application with NowSecure.
   scan:
@@ -50,14 +57,14 @@ jobs:
 
       - name: Display structure of downloaded files
         run: ls -R
-        working-directory: ./
+        working-directory: ./apps
 
       - id: upload
         name: NowSecure upload app
         uses: nowsecure/nowsecure-action/upload-app@main
         with:
           token: ${{ secrets.NS_TOKEN }}
-          app_file: ./paymentsheet-example/build/outputs/apk/debug/paymentsheet-example-debug.apk
+          app_file: ./apps/paymentsheet-example/build/outputs/apk/debug/paymentsheet-example-debug.apk
           group_id: "38a6ce91-7920-493d-958a-b912e1bdb506"
 
   # Pulls the NowSecure report, converts it to SARIF and uploads it.
